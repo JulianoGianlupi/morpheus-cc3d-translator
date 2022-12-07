@@ -51,12 +51,12 @@ def make_cc3d_neighbors_loops(ccloops, ccglo=None):
     mega_str = ""
     for ctype, loops in ccloops.items():
         ctype_loop = f"\n\t\tfor cell in self.cell_list_by_type(self.{ctype.upper()}):\n"
-        # for var, value in ccglo.items():
-        #     ctype_loop += f"\t\t\t{var} = {value}\n"
+
         if type(loops) == list:
             ifs = []
             for loop in loops:
                 ctype_2 = loop['Input']['@value'].split(".")[-2]
+                # todo: morpheus has a zeroing tag, check it before adding the following string
                 ctype_loop += f"\t\t\t{loop['Output']['@symbol-ref']} = 0\n"
                 if_neigh = f"\t\t\t\tif neighbor and neighbor.type == self.{ctype_2.upper()}:\n"
                 if loop['Input']['@scaling'] == "length":
