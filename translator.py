@@ -1,4 +1,5 @@
 import xmltodict as x2d
+import steppable_gen_functions as sgf
 
 
 def get_morpheus_as_dict(infile):
@@ -63,6 +64,8 @@ def make_cc3d_neighbors_loops(ccloops, ccglo=None):
                     if_neigh += f"\t\t\t\t\t{loop['Output']['@symbol-ref']} += common_surface_area\n"
                 else:
                     if_neigh += f"\t\t\t\t\t{loop['Output']['@symbol-ref']} += 1\n"
+                    # todo: refine
+                    if_neigh += f"\t\t\t\tcell.dict['{loop['Output']['@symbol-ref']}']={loop['Output']['@symbol-ref']}\n"
 
                 ifs.append(if_neigh)
         else:
@@ -91,6 +94,9 @@ def main(file_to_translate):
     globals_string = make_globals_str(cc3d_globals)
     neigh_loop = get_neighbors_loops(mdict)
     cc3d_neigh_loops = make_cc3d_neighbors_loops(neigh_loop)
+    steppable_string = sgf.generate_steppable("example", 1, False, additional_imports=globals_string,
+                                              additional_step=cc3d_neigh_loops)
+    steppable_string.replace("\t", "    ")
 
 
 if __name__ == "__main__":
@@ -100,4 +106,11 @@ if __name__ == "__main__":
     globals_string = make_globals_str(cc3d_globals)
     neigh_loop = get_neighbors_loops(mdict)
     cc3d_neigh_loops = make_cc3d_neighbors_loops(neigh_loop)
+    _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='niegbors', attribute_name='b')"
+    steppable_string = sgf.generate_steppable("example", 1, False, additional_imports=globals_string,
+                                              additional_step=cc3d_neigh_loops, additional_init=_extra_init)
+    steppable_string.replace("\t", "    ")
+    with open(r"C:\github\morpheus-cc3d-translator\translated_compucell3d_example\exa"
+              r"mple\Simulation\exampleSteppables.py", "w") as f:
+        f.write(steppable_string)
     print("end")

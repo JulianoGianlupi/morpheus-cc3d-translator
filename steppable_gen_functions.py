@@ -130,6 +130,8 @@ def generate_steppable(step_name, frequency, mitosis, minimal=False, already_imp
     if additional_finish is not None:
         finish = add_to_finish(finish, additional_finish)
 
+    finish += "\n\t\treturn\n"
+
     on_stop = steppable_on_stop()
 
     if additional_on_stop is not None:
