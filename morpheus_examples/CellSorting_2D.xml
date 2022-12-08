@@ -5,7 +5,6 @@
 Graner and Glazier, Simulation of biological cell sorting using a two-dimensional extended Potts model, Phys. Rev. Lett. 69, 2013–2016 (1992) </Details>
     </Description>
     <Global>
-        <Variable symbol="boundary2" value="0.0" name="Boundary length of CT1 with other cell types"/>
         <Variable symbol="boundary" value="0.0" name="Boundary length of CT1 with other cell types"/>
         <Constant symbol="b" value="0.0"/>
         <Constant symbol="b2" value="0.0"/>
