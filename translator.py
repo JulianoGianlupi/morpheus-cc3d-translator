@@ -106,7 +106,7 @@ if __name__ == "__main__":
     globals_string = make_globals_str(cc3d_globals)
     neigh_loop = get_neighbors_loops(mdict)
     cc3d_neigh_loops = make_cc3d_neighbors_loops(neigh_loop)
-    _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='niegbors', attribute_name='b')"
+    _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='neighbor', attribute_name='b')"
     steppable_string = sgf.generate_steppable("example", 1, False, additional_imports=globals_string,
                                               additional_step=cc3d_neigh_loops, additional_init=_extra_init)
     steppable_string.replace("\t", "    ")
