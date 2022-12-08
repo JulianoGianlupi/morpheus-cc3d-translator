@@ -107,8 +107,16 @@ if __name__ == "__main__":
     neigh_loop = get_neighbors_loops(mdict)
     cc3d_neigh_loops = make_cc3d_neighbors_loops(neigh_loop)
     _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='neighbor', attribute_name='b')"
+    _extra_start = "\t\tself.plot_win = self.add_new_plot_window(title='Inter-type common contact area', x_axis_title=" \
+                   "'MonteCarlo Step (MCS)',  y_axis_title='Area', x_scale_type='linear', y_scale_type='linear'," \
+                   " grid=True)\n" \
+                   "\t\tself.plot_win.add_plot('Area', style='Lines', color='red', size=5)"
+
+    _plots = ""
+
     steppable_string = sgf.generate_steppable("example", 1, False, additional_imports=globals_string,
-                                              additional_step=cc3d_neigh_loops, additional_init=_extra_init)
+                                              additional_step=cc3d_neigh_loops, additional_init=_extra_init,
+                                              additional_start=_extra_start)
     steppable_string.replace("\t", "    ")
     with open(r"C:\github\morpheus-cc3d-translator\translated_compucell3d_example\exa"
               r"mple\Simulation\exampleSteppables.py", "w") as f:
