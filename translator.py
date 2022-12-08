@@ -12,13 +12,13 @@ def get_morpheus_as_dict(infile):
 def get_globals(mdict):
     ccglobs = {}
     globs = mdict["Global"]
-    if len(globs["Variable"]):
+    if type(globs["Variable"]) == list:
         for v in globs["Variable"]:
             ccglobs[v["@symbol"]] = v["@value"]
     else:
         ccglobs[globs["Variable"]["@symbol"]] = globs["Variable"]["@value"]
 
-    if len(globs["Constant"]):
+    if type(globs["Constant"]) == list:
         for v in globs["Constant"]:
             ccglobs[v["@symbol"]] = v["@value"]
     else:
@@ -57,15 +57,21 @@ def make_cc3d_neighbors_loops(ccloops, ccglo=None):
             ifs = []
             for loop in loops:
                 ctype_2 = loop['Input']['@value'].split(".")[-2]
-                # todo: morpheus has a zeroing tag, check it before adding the following string
-                ctype_loop += f"\t\t\t{loop['Output']['@symbol-ref']} = 0\n"
+                # todo: morpheus has a zeroing tag, check it to decide when the 0ing should happen
+                if loop['Output']['@symbol-ref'] == "boundary":
+                    ctype_loop = f"\t\t{loop['Output']['@symbol-ref']} = 0\n" + ctype_loop
+                else:
+                    ctype_loop += f"\t\t\t{loop['Output']['@symbol-ref']} = 0\n"
+
                 if_neigh = f"\t\t\t\tif neighbor and neighbor.type == self.{ctype_2.upper()}:\n"
                 if loop['Input']['@scaling'] == "length":
                     if_neigh += f"\t\t\t\t\t{loop['Output']['@symbol-ref']} += common_surface_area\n"
                 else:
                     if_neigh += f"\t\t\t\t\t{loop['Output']['@symbol-ref']} += 1\n"
+                if loop['Output']['@symbol-ref'] == "b" or "b2":
                     # todo: refine
-                    if_neigh += f"\t\t\t\tcell.dict['{loop['Output']['@symbol-ref']}']={loop['Output']['@symbol-ref']}\n"
+                    if_neigh += f"\t\t\t\tcell.dict['{loop['Output']['@symbol-ref']}']=" \
+                                f"{loop['Output']['@symbol-ref']}\n"
 
                 ifs.append(if_neigh)
         else:
@@ -106,17 +112,19 @@ if __name__ == "__main__":
     globals_string = make_globals_str(cc3d_globals)
     neigh_loop = get_neighbors_loops(mdict)
     cc3d_neigh_loops = make_cc3d_neighbors_loops(neigh_loop)
-    _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='neighbor', attribute_name='b')"
+    _extra_init = "\t\tself.track_cell_level_scalar_attribute(field_name='Inter_type_neighbors', attribute_name='b')\n" \
+                  "\t\tself.track_cell_level_scalar_attribute(field_name='Inter_type_contact', attribute_name='b2')"
     _extra_start = "\t\tself.plot_win = self.add_new_plot_window(title='Inter-type common contact area', x_axis_title=" \
                    "'MonteCarlo Step (MCS)',  y_axis_title='Area', x_scale_type='linear', y_scale_type='linear'," \
                    " grid=True)\n" \
                    "\t\tself.plot_win.add_plot('Area', style='Lines', color='red', size=5)"
 
-    _plots = ""
-
+    _extra_step = "\n\t\tself.plot_win.add_data_point('Area', mcs, boundary)"
+    _extra_step = cc3d_neigh_loops + _extra_step
     steppable_string = sgf.generate_steppable("example", 1, False, additional_imports=globals_string,
-                                              additional_step=cc3d_neigh_loops, additional_init=_extra_init,
+                                              additional_step=_extra_step, additional_init=_extra_init,
                                               additional_start=_extra_start)
+
     steppable_string.replace("\t", "    ")
     with open(r"C:\github\morpheus-cc3d-translator\translated_compucell3d_example\exa"
               r"mple\Simulation\exampleSteppables.py", "w") as f:
